@@ -7,6 +7,13 @@ import type { Profile } from "@/types";
 
 const AVATAR_OPTIONS = ["🐱", "🐶", "🐰", "🦊", "🐻", "🐼", "🦁", "🐸"];
 
+function maskEmail(rawEmail: string): string {
+  const [local, domain] = rawEmail.split("@");
+  if (!local || !domain) return rawEmail;
+  const visible = local.slice(0, Math.min(2, local.length));
+  return `${visible}${"*".repeat(Math.max(local.length - visible.length, 2))}@${domain}`;
+}
+
 export default function ProfilesClient({
   initialProfiles,
   email,
@@ -102,7 +109,7 @@ export default function ProfilesClient({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">아이 프로필</h1>
-          <p className="text-sm text-zinc-500">{email}</p>
+          <p className="text-sm text-zinc-500">{maskEmail(email)}</p>
         </div>
         <button
           type="button"
