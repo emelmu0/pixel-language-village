@@ -11,3 +11,48 @@ export type Profile = {
   primary_language: string;
   created_at: string;
 };
+
+export type Concept = {
+  id: string;
+  concept_key: string;
+  part_of_speech: string;
+  difficulty_level: number;
+  domain: string | null;
+  visual_type: string;
+  image_path: string | null;
+  created_at: string;
+};
+
+export type WordEntry = {
+  id: string;
+  concept_id: string;
+  language_code: string;
+  display_text: string;
+  reading: string | null;
+  pronunciation_hint: string | null;
+  definition: string | null;
+  difficulty_level: number;
+  created_at: string;
+};
+
+export type Example = {
+  id: string;
+  concept_id: string;
+  language_code: string;
+  sentence: string;
+  difficulty_level: number;
+  village_compatible: boolean;
+  created_at: string;
+};
+
+export type CardProgress = {
+  id: string;
+  profile_id: string;
+  concept_id: string;
+  language_code: string;
+  mastery_level: number;
+  correct_count: number;
+  review_count: number;
+  last_reviewed_at: string | null;
+  updated_at: string;
+};
