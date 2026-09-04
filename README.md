@@ -25,7 +25,7 @@ npm run dev
 - [x] STEP 1 — 프로젝트 기반 (Next.js + TypeScript, 폴더 구조, 환경변수 템플릿)
 - [x] STEP 2 — 인증과 프로필
 - [x] STEP 3 — 카드 DB (concepts / word_entries / examples / card_progress + 테스트 단어 10개)
-- [ ] STEP 4 — 단어 카드 UI
+- [x] STEP 4 — 단어 카드 UI (프로필별 카드 뒤집기 + 자가평가 저장)
 - [ ] STEP 5 — 학습 기록
 - [ ] STEP 6 — 첫 픽셀 마을
 - [ ] STEP 7 — 문장 모드

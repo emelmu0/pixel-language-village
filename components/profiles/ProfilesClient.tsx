@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/types";
 
@@ -161,6 +162,12 @@ export default function ProfilesClient({
                 <span className="flex-1 text-base font-medium text-zinc-900 dark:text-zinc-50">
                   {profile.nickname}
                 </span>
+                <Link
+                  href={`/words?profile=${profile.id}`}
+                  className="text-sm font-medium text-emerald-600"
+                >
+                  학습하기
+                </Link>
                 <button
                   type="button"
                   onClick={() => startEdit(profile)}
