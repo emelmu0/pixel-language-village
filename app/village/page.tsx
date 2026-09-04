@@ -1,8 +1,164 @@
-export default function VillagePage() {
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { calcVillageLevel, getThemeByKey, pickRandomTheme, WORDS_PER_LEVEL } from "@/lib/village/themes";
+import type { CardProgress, Profile, VillageProfile } from "@/types";
+
+export default async function VillagePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ profile?: string }>;
+}) {
+  const { profile: profileId } = await searchParams;
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  if (!profileId) {
+    redirect("/profiles");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", profileId)
+    .single<Profile>();
+
+  if (!profile) {
+    redirect("/profiles");
+  }
+
+  let { data: village } = await supabase
+    .from("village_profiles")
+    .select("*")
+    .eq("profile_id", profileId)
+    .maybeSingle<VillageProfile>();
+
+  if (!village) {
+    const theme = pickRandomTheme();
+    const { data: created } = await supabase
+      .from("village_profiles")
+      .insert({ profile_id: profileId, theme_key: theme.key })
+      .select()
+      .single<VillageProfile>();
+    village = created ?? null;
+  }
+
+  const { data: progressRows } = await supabase
+    .from("card_progress")
+    .select("*")
+    .eq("profile_id", profileId)
+    .returns<CardProgress[]>();
+
+  const masteredCount = (progressRows ?? []).filter((p) => p.mastery_level >= 4).length;
+  const currentLevel = calcVillageLevel(masteredCount);
+
+  if (village && (village.village_level !== currentLevel || village.xp !== masteredCount)) {
+    const { data: updated } = await supabase
+      .from("village_profiles")
+      .update({ village_level: currentLevel, xp: masteredCount })
+      .eq("id", village.id)
+      .select()
+      .single<VillageProfile>();
+    village = updated ?? village;
+  }
+
+  if (!village) {
+    return (
+      <main className="min-h-screen bg-zinc-50 px-6 py-10 dark:bg-black">
+        <p className="mx-auto max-w-lg text-center text-sm text-red-500">
+          마을을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+        </p>
+      </main>
+    );
+  }
+
+  const theme = getThemeByKey(village.theme_key);
+  const progressInLevel = masteredCount % WORDS_PER_LEVEL;
+  const remainingToNextLevel = WORDS_PER_LEVEL - progressInLevel;
+
+  const buildingCount = Math.max(1, Math.min(village.village_level, 8));
+  const natureCount = Math.min(masteredCount, 12);
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-2 p-8 text-center">
-      <h1 className="text-xl font-semibold">village</h1>
-      <p className="text-sm text-zinc-500">이 화면은 아직 구현되지 않았습니다. (PRD 22장 참고)</p>
+    <main className="min-h-screen bg-zinc-50 px-6 py-10 dark:bg-black">
+      <div className="mx-auto flex w-full max-w-lg flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">픽셀 마을</h1>
+            <p className="text-sm text-zinc-500">
+              {profile.avatar ?? "🙂"} {profile.nickname}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/words?profile=${profile.id}`}
+              className="text-sm text-zinc-500 underline underline-offset-2"
+            >
+              단어 카드
+            </Link>
+            <Link
+              href="/profiles"
+              className="text-sm text-zinc-500 underline underline-offset-2"
+            >
+              프로필 목록
+            </Link>
+          </div>
+        </div>
+
+        <section className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex items-center gap-3">
+            <span className="text-4xl">{theme.emoji}</span>
+            <div>
+              <p className="text-lg font-bold text-zinc-900 dark:text-zinc-50">{theme.name}</p>
+              <p className="text-sm text-zinc-500">Lv.{village.village_level} 마을</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+              <div
+                className="h-full rounded-full bg-emerald-500"
+                style={{ width: `${(progressInLevel / WORDS_PER_LEVEL) * 100}%` }}
+              />
+            </div>
+            <p className="text-xs text-zinc-500">
+              다음 레벨까지 단어 {remainingToNextLevel}개
+            </p>
+          </div>
+
+          <div className="grid grid-cols-6 gap-2 rounded-xl bg-zinc-50 p-4 text-center text-2xl dark:bg-zinc-800">
+            {Array.from({ length: buildingCount }).map((_, i) => (
+              <span key={`b-${i}`}>{theme.buildingEmoji}</span>
+            ))}
+            {Array.from({ length: natureCount }).map((_, i) => (
+              <span key={`n-${i}`}>{theme.natureEmoji}</span>
+            ))}
+            {buildingCount + natureCount === 0 && (
+              <p className="col-span-6 text-sm text-zinc-400">
+                아직 마을이 조용해요. 단어를 익히면 마을이 자라나요.
+              </p>
+            )}
+          </div>
+
+          <p className="text-center text-xs text-zinc-400">
+            익힌 단어 {masteredCount}개가 마을의 건물과 풍경이 되었어요
+          </p>
+        </section>
+
+        <Link
+          href={`/words?profile=${profile.id}`}
+          className="rounded-lg bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white dark:bg-zinc-50 dark:text-zinc-900"
+        >
+          단어 카드로 마을 키우기
+        </Link>
+      </div>
     </main>
   );
 }

@@ -56,3 +56,13 @@ export type CardProgress = {
   last_reviewed_at: string | null;
   updated_at: string;
 };
+
+export type VillageProfile = {
+  id: string;
+  profile_id: string;
+  theme_key: string;
+  village_level: number;
+  xp: number;
+  created_at: string;
+  updated_at: string;
+};
