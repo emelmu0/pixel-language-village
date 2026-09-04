@@ -88,3 +88,13 @@ export type LearnedSentence = {
   sentence_text: string;
   created_at: string;
 };
+
+export type VillageEvent = {
+  id: string;
+  profile_id: string;
+  concept_id: string;
+  example_id: string | null;
+  event_type: string;
+  shown_at: string;
+  completed_at: string | null;
+};

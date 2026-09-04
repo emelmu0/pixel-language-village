@@ -2,7 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { calcVillageLevel, getThemeByKey, pickRandomTheme, WORDS_PER_LEVEL } from "@/lib/village/themes";
-import type { CardProgress, Profile, VillageProfile } from "@/types";
+import VillagerDialogueClient from "@/components/village/VillagerDialogueClient";
+import type { CardProgress, Concept, Example, Profile, VillageEvent, VillageProfile, WordEntry } from "@/types";
+
+const TARGET_LANGUAGE = "en";
+const NATIVE_LANGUAGE = "ko";
+const MASTERY_THRESHOLD = 4;
 
 export default async function VillagePage({
   searchParams,
@@ -56,7 +61,7 @@ export default async function VillagePage({
     .eq("profile_id", profileId)
     .returns<CardProgress[]>();
 
-  const masteredCount = (progressRows ?? []).filter((p) => p.mastery_level >= 4).length;
+  const masteredCount = (progressRows ?? []).filter((p) => p.mastery_level >= MASTERY_THRESHOLD).length;
   const currentLevel = calcVillageLevel(masteredCount);
 
   if (village && (village.village_level !== currentLevel || village.xp !== masteredCount)) {
@@ -85,6 +90,90 @@ export default async function VillagePage({
 
   const buildingCount = Math.max(1, Math.min(village.village_level, 8));
   const natureCount = Math.min(masteredCount, 12);
+
+  // STEP 8: 마을 예문 - 최근 학습(복습)한 익힌 단어로 주민 대화를 만든다.
+  const { data: recentMastered } = await supabase
+    .from("card_progress")
+    .select("*")
+    .eq("profile_id", profileId)
+    .eq("language_code", TARGET_LANGUAGE)
+    .gte("mastery_level", MASTERY_THRESHOLD)
+    .order("last_reviewed_at", { ascending: false })
+    .limit(1)
+    .returns<CardProgress[]>();
+
+  const recentConceptId = recentMastered?.[0]?.concept_id ?? null;
+
+  let dialogue: {
+    eventId: string;
+    targetSentence: string;
+    nativeSentence: string;
+    targetWord: string;
+    nativeWord: string;
+    alreadyCompleted: boolean;
+  } | null = null;
+
+  if (recentConceptId) {
+    const { data: concept } = await supabase
+      .from("concepts")
+      .select("*")
+      .eq("id", recentConceptId)
+      .single<Concept>();
+
+    const { data: wordEntries } = await supabase
+      .from("word_entries")
+      .select("*")
+      .eq("concept_id", recentConceptId)
+      .returns<WordEntry[]>();
+
+    const { data: examples } = await supabase
+      .from("examples")
+      .select("*")
+      .eq("concept_id", recentConceptId)
+      .returns<Example[]>();
+
+    const targetWord = wordEntries?.find((w) => w.language_code === TARGET_LANGUAGE);
+    const nativeWord = wordEntries?.find((w) => w.language_code === NATIVE_LANGUAGE);
+    const targetExample = examples?.find((e) => e.language_code === TARGET_LANGUAGE);
+    const nativeExample = examples?.find((e) => e.language_code === NATIVE_LANGUAGE);
+
+    if (concept && targetWord && nativeWord && targetExample && nativeExample) {
+      const { data: existingEvent } = await supabase
+        .from("village_events")
+        .select("*")
+        .eq("profile_id", profileId)
+        .eq("concept_id", recentConceptId)
+        .order("shown_at", { ascending: false })
+        .limit(1)
+        .maybeSingle<VillageEvent>();
+
+      let event = existingEvent;
+      if (!event) {
+        const { data: created } = await supabase
+          .from("village_events")
+          .insert({
+            profile_id: profileId,
+            concept_id: recentConceptId,
+            example_id: targetExample.id,
+            event_type: "resident_dialogue",
+          })
+          .select()
+          .single<VillageEvent>();
+        event = created ?? null;
+      }
+
+      if (event) {
+        dialogue = {
+          eventId: event.id,
+          targetSentence: targetExample.sentence,
+          nativeSentence: nativeExample.sentence,
+          targetWord: targetWord.display_text,
+          nativeWord: nativeWord.display_text,
+          alreadyCompleted: Boolean(event.completed_at),
+        };
+      }
+    }
+  }
 
   return (
     <main className="min-h-screen bg-zinc-50 px-6 py-10 dark:bg-black">
@@ -151,6 +240,22 @@ export default async function VillagePage({
             익힌 단어 {masteredCount}개가 마을의 건물과 풍경이 되었어요
           </p>
         </section>
+
+        {dialogue ? (
+          <VillagerDialogueClient
+            profileId={profile.id}
+            villagerEmoji={theme.buildingEmoji}
+            {...dialogue}
+          />
+        ) : (
+          <section className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-zinc-300 p-6 text-center dark:border-zinc-700">
+            <p className="text-2xl">🌱</p>
+            <p className="text-sm text-zinc-500">
+              단어 카드에서 &quot;잘 알아요&quot;를 눌러 단어를 익히면 마을 주민이 그 단어로
+              말을 걸어와요.
+            </p>
+          </section>
+        )}
 
         <Link
           href={`/words?profile=${profile.id}`}
