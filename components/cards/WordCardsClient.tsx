@@ -161,7 +161,18 @@ export default function WordCardsClient({
         >
           {/* 앞면 */}
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-2xl border border-zinc-200 bg-white p-6 [backface-visibility:hidden] dark:border-zinc-800 dark:bg-zinc-900">
-            <span className="text-6xl">{POS_EMOJI[card.concept.part_of_speech] ?? "🧩"}</span>
+            {card.concept.image_path ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={card.concept.image_path}
+                alt={card.targetWord.display_text}
+                width={16}
+                height={16}
+                className="h-24 w-24 [image-rendering:pixelated]"
+              />
+            ) : (
+              <span className="text-6xl">{POS_EMOJI[card.concept.part_of_speech] ?? "🧩"}</span>
+            )}
             <span className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
               {card.targetWord.display_text}
             </span>

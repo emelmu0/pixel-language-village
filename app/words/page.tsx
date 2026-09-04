@@ -61,12 +61,20 @@ export default async function WordsPage({
               {profile.avatar ?? "🙂"} {profile.nickname}
             </p>
           </div>
-          <Link
-            href="/profiles"
-            className="text-sm text-zinc-500 underline underline-offset-2"
-          >
-            프로필 목록
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/records?profile=${profile.id}`}
+              className="text-sm text-zinc-500 underline underline-offset-2"
+            >
+              기록
+            </Link>
+            <Link
+              href="/profiles"
+              className="text-sm text-zinc-500 underline underline-offset-2"
+            >
+              프로필 목록
+            </Link>
+          </div>
         </div>
 
         <WordCardsClient

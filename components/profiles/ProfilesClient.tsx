@@ -32,6 +32,7 @@ export default function ProfilesClient({
   const [editingNickname, setEditingNickname] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
 
   async function handleAdd(event: React.FormEvent) {
     event.preventDefault();
@@ -64,6 +65,7 @@ export default function ProfilesClient({
     setProfiles((prev) => [...prev, data as Profile]);
     setNickname("");
     setAvatar(AVATAR_OPTIONS[0]);
+    setShowAddForm(false);
   }
 
   async function handleDelete(id: string) {
@@ -112,19 +114,75 @@ export default function ProfilesClient({
           <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">아이 프로필</h1>
           <p className="text-sm text-zinc-500">{maskEmail(email)}</p>
         </div>
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300"
-        >
-          로그아웃
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowAddForm((v) => !v)}
+            className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white dark:bg-zinc-50 dark:text-zinc-900"
+          >
+            {showAddForm ? "닫기" : "+ 프로필 추가"}
+          </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300"
+          >
+            로그아웃
+          </button>
+        </div>
       </div>
+
+      {showAddForm && (
+        <form
+          onSubmit={handleAdd}
+          className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+        >
+          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+            새 아이 프로필 추가
+          </h2>
+
+          <div className="flex flex-wrap gap-2">
+            {AVATAR_OPTIONS.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setAvatar(option)}
+                className={`flex h-10 w-10 items-center justify-center rounded-lg text-xl ${
+                  avatar === option
+                    ? "bg-zinc-900 dark:bg-zinc-50"
+                    : "bg-zinc-100 dark:bg-zinc-800"
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+
+          <input
+            autoFocus
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="아이 닉네임"
+            required
+            className="rounded-lg border border-zinc-300 px-3 py-2 text-base dark:border-zinc-700 dark:bg-zinc-800"
+          />
+
+          {error && <p className="text-sm text-red-500">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={saving}
+            className="rounded-lg bg-zinc-900 px-4 py-2 text-base font-medium text-white disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900"
+          >
+            {saving ? "추가 중..." : "프로필 추가"}
+          </button>
+        </form>
+      )}
 
       <ul className="flex flex-col gap-3">
         {profiles.length === 0 && (
           <li className="rounded-xl border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700">
-            아직 등록된 아이 프로필이 없어요. 아래에서 추가해 주세요.
+            아직 등록된 아이 프로필이 없어요. 위의 &quot;+ 프로필 추가&quot; 버튼을 눌러 추가해 주세요.
           </li>
         )}
         {profiles.map((profile) => (
@@ -168,6 +226,12 @@ export default function ProfilesClient({
                 >
                   학습하기
                 </Link>
+                <Link
+                  href={`/records?profile=${profile.id}`}
+                  className="text-sm text-zinc-500"
+                >
+                  기록
+                </Link>
                 <button
                   type="button"
                   onClick={() => startEdit(profile)}
@@ -187,50 +251,6 @@ export default function ProfilesClient({
           </li>
         ))}
       </ul>
-
-      <form
-        onSubmit={handleAdd}
-        className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
-      >
-        <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-          새 아이 프로필 추가
-        </h2>
-
-        <div className="flex flex-wrap gap-2">
-          {AVATAR_OPTIONS.map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => setAvatar(option)}
-              className={`flex h-10 w-10 items-center justify-center rounded-lg text-xl ${
-                avatar === option
-                  ? "bg-zinc-900 dark:bg-zinc-50"
-                  : "bg-zinc-100 dark:bg-zinc-800"
-              }`}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-
-        <input
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          placeholder="아이 닉네임"
-          required
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-base dark:border-zinc-700 dark:bg-zinc-800"
-        />
-
-        {error && <p className="text-sm text-red-500">{error}</p>}
-
-        <button
-          type="submit"
-          disabled={saving}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-base font-medium text-white disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900"
-        >
-          {saving ? "추가 중..." : "프로필 추가"}
-        </button>
-      </form>
     </div>
   );
 }
