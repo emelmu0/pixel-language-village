@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SentenceMissionClient from "@/components/sentences/SentenceMissionClient";
 import { getActiveTargetLanguage } from "@/lib/languages";
+import LanguageSwitcher from "@/components/languages/LanguageSwitcher";
 import type { CardProgress, Concept, Profile, SentencePattern } from "@/types";
 
 const MASTERY_THRESHOLD = 4;
@@ -86,6 +87,7 @@ export default async function SentencesPage({
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher profileId={profile.id} activeLanguage={activeLanguage} />
             <Link
               href={`/words?profile=${profile.id}`}
               className="text-sm text-zinc-500 underline underline-offset-2"
@@ -105,7 +107,7 @@ export default async function SentencesPage({
           잘 아는 단어 {unlockedPatterns.length} / {totalPatterns}개로 문장 미션을 만들 수 있어요
         </p>
 
-        <SentenceMissionClient profileId={profile.id} patterns={unlockedPatterns} />
+        <SentenceMissionClient key={activeLanguage} profileId={profile.id} patterns={unlockedPatterns} />
       </div>
     </main>
   );

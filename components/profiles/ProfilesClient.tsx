@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { TARGET_LANGUAGES } from "@/lib/languages";
 import type { Profile } from "@/types";
 
 const AVATAR_OPTIONS = ["🐱", "🐶", "🐰", "🦊", "🐻", "🐼", "🦁", "🐸"];
@@ -28,6 +29,7 @@ export default function ProfilesClient({
   const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
   const [nickname, setNickname] = useState("");
   const [avatar, setAvatar] = useState(AVATAR_OPTIONS[0]);
+  const [targetLanguage, setTargetLanguage] = useState(TARGET_LANGUAGES[0].code);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingNickname, setEditingNickname] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -56,15 +58,24 @@ export default function ProfilesClient({
       .select()
       .single();
 
-    setSaving(false);
     if (error) {
+      setSaving(false);
       setError(error.message);
       return;
     }
 
-    setProfiles((prev) => [...prev, data as Profile]);
+    const newProfile = data as Profile;
+
+    await supabase.from("profile_languages").upsert(
+      { profile_id: newProfile.id, language_code: targetLanguage, is_active: true },
+      { onConflict: "profile_id,language_code" }
+    );
+
+    setSaving(false);
+    setProfiles((prev) => [...prev, newProfile]);
     setNickname("");
     setAvatar(AVATAR_OPTIONS[0]);
+    setTargetLanguage(TARGET_LANGUAGES[0].code);
     setShowAddForm(false);
   }
 
@@ -166,6 +177,26 @@ export default function ProfilesClient({
             required
             className="rounded-lg border border-zinc-300 px-3 py-2 text-base dark:border-zinc-700 dark:bg-zinc-800"
           />
+
+          <div className="flex flex-col gap-2">
+            <p className="text-xs text-zinc-500">어떤 언어를 배울까요?</p>
+            <div className="flex flex-wrap gap-2">
+              {TARGET_LANGUAGES.map((lang) => (
+                <button
+                  key={lang.code}
+                  type="button"
+                  onClick={() => setTargetLanguage(lang.code)}
+                  className={
+                    lang.code === targetLanguage
+                      ? "rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white dark:bg-zinc-50 dark:text-zinc-900"
+                      : "rounded-full border border-zinc-300 px-3 py-1 text-xs text-zinc-500 dark:border-zinc-700"
+                  }
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {error && <p className="text-sm text-red-500">{error}</p>}
 

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { calcVillageLevel, getThemeByKey, pickRandomTheme, WORDS_PER_LEVEL } from "@/lib/village/themes";
 import VillagerDialogueClient from "@/components/village/VillagerDialogueClient";
 import { getActiveTargetLanguage, NATIVE_LANGUAGE } from "@/lib/languages";
+import LanguageSwitcher from "@/components/languages/LanguageSwitcher";
 import type { CardProgress, Concept, Example, Profile, VillageEvent, VillageProfile, WordEntry } from "@/types";
 
 const MASTERY_THRESHOLD = 4;
@@ -188,6 +189,7 @@ export default async function VillagePage({
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher profileId={profile.id} activeLanguage={activeLanguage} />
             <Link
               href={`/words?profile=${profile.id}`}
               className="text-sm text-zinc-500 underline underline-offset-2"
