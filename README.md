@@ -30,7 +30,7 @@ npm run dev
 - [x] STEP 6 — 첫 픽셀 마을 (테마 마을 자동 배정 + 레벨/성장 시각화)
 - [x] STEP 7 — 문장 모드 (익힌 단어로 문장 조합 미션 + learned_sentences 저장)
 - [x] STEP 8 — 마을 예문 (최근 익힌 단어로 주민 대화 등장 + village_events 저장)
-- [ ] STEP 9 — 다국어
+- [x] STEP 9 — 다국어 (일본어 콘텐츠 추가 + 학습 언어 전환 기능)
 - [ ] STEP 10 — 콘텐츠 확대
 
 전체 로드맵은 `docs/PRD.md` 28장(개발 단계)을 참고하세요.

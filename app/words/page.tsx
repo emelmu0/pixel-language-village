@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import WordCardsClient from "@/components/cards/WordCardsClient";
+import LanguageSwitcher from "@/components/languages/LanguageSwitcher";
+import { getActiveTargetLanguage } from "@/lib/languages";
 import type { CardProgress, Concept, Example, Profile, WordEntry } from "@/types";
 
 type ConceptWithRelations = Concept & {
@@ -39,6 +41,8 @@ export default async function WordsPage({
     redirect("/profiles");
   }
 
+  const activeLanguage = await getActiveTargetLanguage(supabase, profile.id);
+
   const { data: concepts } = await supabase
     .from("concepts")
     .select("*, word_entries(*), examples(*)")
@@ -62,6 +66,7 @@ export default async function WordsPage({
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher profileId={profile.id} activeLanguage={activeLanguage} />
             <Link
               href={`/sentences?profile=${profile.id}`}
               className="text-sm text-zinc-500 underline underline-offset-2"
@@ -84,9 +89,11 @@ export default async function WordsPage({
         </div>
 
         <WordCardsClient
+          key={activeLanguage}
           profileId={profile.id}
           concepts={concepts ?? []}
           initialProgress={progress ?? []}
+          targetLanguage={activeLanguage}
         />
       </div>
     </main>

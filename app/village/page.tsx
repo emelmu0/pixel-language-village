@@ -3,10 +3,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { calcVillageLevel, getThemeByKey, pickRandomTheme, WORDS_PER_LEVEL } from "@/lib/village/themes";
 import VillagerDialogueClient from "@/components/village/VillagerDialogueClient";
+import { getActiveTargetLanguage, NATIVE_LANGUAGE } from "@/lib/languages";
 import type { CardProgress, Concept, Example, Profile, VillageEvent, VillageProfile, WordEntry } from "@/types";
 
-const TARGET_LANGUAGE = "en";
-const NATIVE_LANGUAGE = "ko";
 const MASTERY_THRESHOLD = 4;
 
 export default async function VillagePage({
@@ -92,11 +91,14 @@ export default async function VillagePage({
   const natureCount = Math.min(masteredCount, 12);
 
   // STEP 8: 마을 예문 - 최근 학습(복습)한 익힌 단어로 주민 대화를 만든다.
+  // STEP 9: 지금 배우는 언어(활성 언어) 기준으로 보여준다.
+  const activeLanguage = await getActiveTargetLanguage(supabase, profileId);
+
   const { data: recentMastered } = await supabase
     .from("card_progress")
     .select("*")
     .eq("profile_id", profileId)
-    .eq("language_code", TARGET_LANGUAGE)
+    .eq("language_code", activeLanguage)
     .gte("mastery_level", MASTERY_THRESHOLD)
     .order("last_reviewed_at", { ascending: false })
     .limit(1)
@@ -132,9 +134,9 @@ export default async function VillagePage({
       .eq("concept_id", recentConceptId)
       .returns<Example[]>();
 
-    const targetWord = wordEntries?.find((w) => w.language_code === TARGET_LANGUAGE);
+    const targetWord = wordEntries?.find((w) => w.language_code === activeLanguage);
     const nativeWord = wordEntries?.find((w) => w.language_code === NATIVE_LANGUAGE);
-    const targetExample = examples?.find((e) => e.language_code === TARGET_LANGUAGE);
+    const targetExample = examples?.find((e) => e.language_code === activeLanguage);
     const nativeExample = examples?.find((e) => e.language_code === NATIVE_LANGUAGE);
 
     if (concept && targetWord && nativeWord && targetExample && nativeExample) {

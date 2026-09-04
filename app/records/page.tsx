@@ -1,14 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { LANGUAGE_LABEL } from "@/lib/languages";
 import type { CardProgress, Profile } from "@/types";
-
-const LANGUAGE_LABEL: Record<string, string> = {
-  ko: "한국어",
-  en: "English",
-  ja: "日本語",
-  es: "Español",
-};
 
 function todayInSeoul(): string {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });

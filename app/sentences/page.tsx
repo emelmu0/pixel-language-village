@@ -2,9 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SentenceMissionClient from "@/components/sentences/SentenceMissionClient";
+import { getActiveTargetLanguage } from "@/lib/languages";
 import type { CardProgress, Concept, Profile, SentencePattern } from "@/types";
 
-const TARGET_LANGUAGE = "en";
 const MASTERY_THRESHOLD = 4;
 
 export default async function SentencesPage({
@@ -37,11 +37,13 @@ export default async function SentencesPage({
     redirect("/profiles");
   }
 
+  const activeLanguage = await getActiveTargetLanguage(supabase, profile.id);
+
   const { data: progressRows } = await supabase
     .from("card_progress")
     .select("*")
     .eq("profile_id", profileId)
-    .eq("language_code", TARGET_LANGUAGE)
+    .eq("language_code", activeLanguage)
     .returns<CardProgress[]>();
 
   const masteredConceptIds = new Set(
@@ -64,7 +66,7 @@ export default async function SentencesPage({
   const { data: allPatterns } = await supabase
     .from("sentence_patterns")
     .select("*")
-    .eq("language_code", TARGET_LANGUAGE)
+    .eq("language_code", activeLanguage)
     .returns<SentencePattern[]>();
 
   const unlockedPatterns = (allPatterns ?? []).filter((p) =>

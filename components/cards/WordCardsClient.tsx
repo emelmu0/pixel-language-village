@@ -4,8 +4,7 @@ import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { CardProgress, Concept, Example, WordEntry } from "@/types";
 
-const NATIVE_LANGUAGE = "ko";
-const TARGET_LANGUAGE = "en";
+import { NATIVE_LANGUAGE } from "@/lib/languages";
 
 const POS_EMOJI: Record<string, string> = {
   noun: "📦",
@@ -27,11 +26,11 @@ type CardData = {
   nativeExample: Example | null;
 };
 
-function buildCards(concepts: ConceptWithRelations[]): CardData[] {
+function buildCards(concepts: ConceptWithRelations[], targetLanguage: string): CardData[] {
   const cards: CardData[] = [];
   for (const concept of concepts) {
     const targetWord = concept.word_entries.find(
-      (w) => w.language_code === TARGET_LANGUAGE
+      (w) => w.language_code === targetLanguage
     );
     const nativeWord = concept.word_entries.find(
       (w) => w.language_code === NATIVE_LANGUAGE
@@ -39,7 +38,7 @@ function buildCards(concepts: ConceptWithRelations[]): CardData[] {
     if (!targetWord || !nativeWord) continue;
 
     const targetExample =
-      concept.examples.find((e) => e.language_code === TARGET_LANGUAGE) ?? null;
+      concept.examples.find((e) => e.language_code === targetLanguage) ?? null;
     const nativeExample =
       concept.examples.find((e) => e.language_code === NATIVE_LANGUAGE) ?? null;
 
@@ -52,19 +51,21 @@ export default function WordCardsClient({
   profileId,
   concepts,
   initialProgress,
+  targetLanguage,
 }: {
   profileId: string;
   concepts: ConceptWithRelations[];
   initialProgress: CardProgress[];
+  targetLanguage: string;
 }) {
   const supabase = createClient();
-  const cards = useMemo(() => buildCards(concepts), [concepts]);
+  const cards = useMemo(() => buildCards(concepts, targetLanguage), [concepts, targetLanguage]);
 
   const [progressByConcept, setProgressByConcept] = useState<Record<string, CardProgress>>(
     () => {
       const map: Record<string, CardProgress> = {};
       for (const p of initialProgress) {
-        if (p.language_code === TARGET_LANGUAGE) {
+        if (p.language_code === targetLanguage) {
           map[p.concept_id] = p;
         }
       }
@@ -115,7 +116,7 @@ export default function WordCardsClient({
     const nextProgress = {
       profile_id: profileId,
       concept_id: card.concept.id,
-      language_code: TARGET_LANGUAGE,
+      language_code: targetLanguage,
       mastery_level: masteryLevel,
       correct_count: (prev?.correct_count ?? 0) + (masteryLevel >= 4 ? 1 : 0),
       review_count: (prev?.review_count ?? 0) + 1,
