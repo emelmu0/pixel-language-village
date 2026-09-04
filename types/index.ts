@@ -66,3 +66,25 @@ export type VillageProfile = {
   created_at: string;
   updated_at: string;
 };
+
+export type SentencePattern = {
+  id: string;
+  language_code: string;
+  pattern_key: string;
+  difficulty_level: number;
+  structure_json: {
+    concept_key: string;
+    tokens: string[];
+    native_sentence: string;
+  };
+  created_at: string;
+};
+
+export type LearnedSentence = {
+  id: string;
+  profile_id: string;
+  language_code: string;
+  sentence_pattern_id: string;
+  sentence_text: string;
+  created_at: string;
+};

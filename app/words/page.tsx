@@ -63,6 +63,12 @@ export default async function WordsPage({
           </div>
           <div className="flex items-center gap-3">
             <Link
+              href={`/sentences?profile=${profile.id}`}
+              className="text-sm text-zinc-500 underline underline-offset-2"
+            >
+              문장 만들기
+            </Link>
+            <Link
               href={`/records?profile=${profile.id}`}
               className="text-sm text-zinc-500 underline underline-offset-2"
             >
