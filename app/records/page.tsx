@@ -92,12 +92,20 @@ export default async function RecordsPage({
               {profile.avatar ?? "🙂"} {profile.nickname}
             </p>
           </div>
-          <Link
-            href="/profiles"
-            className="text-sm text-zinc-500 underline underline-offset-2"
-          >
-            프로필 목록
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/village?profile=${profile.id}`}
+              className="text-sm text-zinc-500 underline underline-offset-2"
+            >
+              마을
+            </Link>
+            <Link
+              href="/profiles"
+              className="text-sm text-zinc-500 underline underline-offset-2"
+            >
+              프로필 목록
+            </Link>
+          </div>
         </div>
 
         <section className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">

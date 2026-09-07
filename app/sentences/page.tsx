@@ -95,6 +95,12 @@ export default async function SentencesPage({
               단어 카드
             </Link>
             <Link
+              href={`/village?profile=${profile.id}`}
+              className="text-sm text-zinc-500 underline underline-offset-2"
+            >
+              마을
+            </Link>
+            <Link
               href="/profiles"
               className="text-sm text-zinc-500 underline underline-offset-2"
             >

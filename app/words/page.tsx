@@ -74,6 +74,12 @@ export default async function WordsPage({
               문장 만들기
             </Link>
             <Link
+              href={`/village?profile=${profile.id}`}
+              className="text-sm text-zinc-500 underline underline-offset-2"
+            >
+              마을
+            </Link>
+            <Link
               href={`/records?profile=${profile.id}`}
               className="text-sm text-zinc-500 underline underline-offset-2"
             >

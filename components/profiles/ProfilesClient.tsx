@@ -269,6 +269,12 @@ export default function ProfilesClient({
                 >
                   문장
                 </Link>
+                <Link
+                  href={`/village?profile=${profile.id}`}
+                  className="text-sm text-zinc-500"
+                >
+                  마을
+                </Link>
                 <button
                   type="button"
                   onClick={() => startEdit(profile)}
