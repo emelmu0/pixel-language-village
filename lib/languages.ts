@@ -10,12 +10,14 @@ export const NATIVE_LANGUAGE = "ko";
 export const TARGET_LANGUAGES: { code: string; label: string }[] = [
   { code: "en", label: "영어" },
   { code: "ja", label: "일본어" },
+  { code: "fr", label: "프랑스어" },
 ];
 
 export const LANGUAGE_LABEL: Record<string, string> = {
   ko: "한국어",
   en: "영어",
   ja: "일본어",
+  fr: "프랑스어",
   es: "스페인어",
 };
 
