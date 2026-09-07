@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LANGUAGE_LABEL } from "@/lib/languages";
-import type { CardProgress, Profile } from "@/types";
+import type { CardProgress, LearnedSentence, Profile } from "@/types";
 
 function todayInSeoul(): string {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
@@ -47,6 +47,21 @@ export default async function RecordsPage({
     .select("*")
     .eq("profile_id", profileId)
     .returns<CardProgress[]>();
+
+  const { data: sentenceRows } = await supabase
+    .from("learned_sentences")
+    .select("*")
+    .eq("profile_id", profileId)
+    .returns<LearnedSentence[]>();
+
+  const learnedSentences = sentenceRows ?? [];
+  const sentencesByLanguage = new Map<string, number>();
+  for (const s of learnedSentences) {
+    sentencesByLanguage.set(
+      s.language_code,
+      (sentencesByLanguage.get(s.language_code) ?? 0) + 1
+    );
+  }
 
   const progress = progressRows ?? [];
   const today = todayInSeoul();
@@ -131,6 +146,18 @@ export default async function RecordsPage({
           </dl>
         </section>
 
+        <section className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+            문장 기록
+          </h2>
+          <div className="flex items-center justify-between py-1">
+            <dt className="text-sm text-zinc-500">완성한 문장</dt>
+            <dd className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+              {learnedSentences.length}개
+            </dd>
+          </div>
+        </section>
+
         {masteredByLanguage.size > 0 && (
           <section className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
             <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
@@ -143,7 +170,10 @@ export default async function RecordsPage({
                     {LANGUAGE_LABEL[code] ?? code}
                   </span>
                   <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                    {count}개
+                    익힌 단어 {count}개
+                    {sentencesByLanguage.get(code)
+                      ? ` · 문장 ${sentencesByLanguage.get(code)}개`
+                      : ""}
                   </span>
                 </li>
               ))}
@@ -158,7 +188,7 @@ export default async function RecordsPage({
         )}
 
         <p className="text-center text-xs text-zinc-400">
-          문장 수와 학습시간 기록은 문장 모드 구현 이후 추가될 예정이에요.
+          학습시간 기록은 추후 추가될 예정이에요.
         </p>
 
         <Link

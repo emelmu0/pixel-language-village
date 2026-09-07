@@ -207,7 +207,14 @@ export default async function VillagePage({
 
         <section className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
           <div className="flex items-center gap-3">
-            <span className="text-4xl">{theme.emoji}</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={theme.buildingImage}
+              alt={theme.name}
+              width={16}
+              height={16}
+              className="h-12 w-12 [image-rendering:pixelated]"
+            />
             <div>
               <p className="text-lg font-bold text-zinc-900 dark:text-zinc-50">{theme.name}</p>
               <p className="text-sm text-zinc-500">Lv.{village.village_level} 마을</p>
@@ -226,12 +233,28 @@ export default async function VillagePage({
             </p>
           </div>
 
-          <div className="grid grid-cols-6 gap-2 rounded-xl bg-zinc-50 p-4 text-center text-2xl dark:bg-zinc-800">
+          <div className="grid grid-cols-6 gap-2 rounded-xl bg-zinc-50 p-4 dark:bg-zinc-800">
             {Array.from({ length: buildingCount }).map((_, i) => (
-              <span key={`b-${i}`}>{theme.buildingEmoji}</span>
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={`b-${i}`}
+                src={theme.buildingImage}
+                alt={theme.name}
+                width={16}
+                height={16}
+                className="mx-auto h-8 w-8 [image-rendering:pixelated]"
+              />
             ))}
             {Array.from({ length: natureCount }).map((_, i) => (
-              <span key={`n-${i}`}>{theme.natureEmoji}</span>
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={`n-${i}`}
+                src={theme.natureImage}
+                alt=""
+                width={16}
+                height={16}
+                className="mx-auto h-8 w-8 [image-rendering:pixelated]"
+              />
             ))}
             {buildingCount + natureCount === 0 && (
               <p className="col-span-6 text-sm text-zinc-400">
@@ -248,7 +271,8 @@ export default async function VillagePage({
         {dialogue ? (
           <VillagerDialogueClient
             profileId={profile.id}
-            villagerEmoji={theme.buildingEmoji}
+            villagerImage={theme.buildingImage}
+            villagerName={theme.name}
             {...dialogue}
           />
         ) : (

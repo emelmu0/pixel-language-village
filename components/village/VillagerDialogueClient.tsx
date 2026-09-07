@@ -43,7 +43,8 @@ function HighlightedSentence({
 export default function VillagerDialogueClient({
   profileId,
   eventId,
-  villagerEmoji,
+  villagerImage,
+  villagerName,
   targetSentence,
   nativeSentence,
   targetWord,
@@ -52,7 +53,8 @@ export default function VillagerDialogueClient({
 }: {
   profileId: string;
   eventId: string;
-  villagerEmoji: string;
+  villagerImage: string;
+  villagerName: string;
   targetSentence: string;
   nativeSentence: string;
   targetWord: string;
@@ -85,13 +87,27 @@ export default function VillagerDialogueClient({
           onClick={() => setRevealed(true)}
           className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-zinc-300 p-6 text-center dark:border-zinc-700"
         >
-          <span className="text-4xl">{villagerEmoji}</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={villagerImage}
+            alt={villagerName}
+            width={16}
+            height={16}
+            className="h-12 w-12 [image-rendering:pixelated]"
+          />
           <span className="text-xs text-zinc-400">주민을 눌러 이야기를 들어보세요</span>
         </button>
       ) : (
         <div className="flex flex-col gap-3 rounded-xl bg-zinc-50 p-4 dark:bg-zinc-800">
           <div className="flex items-start gap-3">
-            <span className="text-3xl">{villagerEmoji}</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={villagerImage}
+              alt={villagerName}
+              width={16}
+              height={16}
+              className="h-10 w-10 shrink-0 [image-rendering:pixelated]"
+            />
             <div className="flex-1 rounded-2xl rounded-tl-none bg-white p-3 dark:bg-zinc-900">
               <HighlightedSentence
                 sentence={targetSentence}
